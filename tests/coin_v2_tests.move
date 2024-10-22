@@ -39,17 +39,17 @@ fun test_end_to_end() {
 
     let (mut treasury_cap, mut witness) = coin_v2::new(cap, scenario.ctx());
     
-    assert_eq(coin_v2::mint_cap_created(&witness), false);
-    assert_eq(coin_v2::burn_cap_created(&witness), false);
-    assert_eq(coin_v2::metadata_cap_created(&witness), false);
+    assert_eq(witness.mint_cap_address().is_none(), true);
+    assert_eq(witness.burn_cap_address().is_none(), true);
+    assert_eq(witness.metadata_cap_address().is_none(), true);
 
     let mint_cap = witness.create_mint_cap(scenario.ctx());
     let burn_cap = witness.create_burn_cap(scenario.ctx());
     let metadata_cap = witness.create_metadata_cap(scenario.ctx()); 
 
-    assert_eq(witness.mint_cap_created(), true);
-    assert_eq(witness.burn_cap_created(), true);
-    assert_eq(witness.metadata_cap_created(), true);
+    assert_eq(witness.mint_cap_address().destroy_some(), object::id(&mint_cap).to_address());
+    assert_eq(witness.burn_cap_address().destroy_some(), object::id(&burn_cap).to_address());
+    assert_eq(witness.metadata_cap_address().destroy_some(), object::id(&metadata_cap).to_address());
     assert_eq(burn_cap.indestructible(), false);
 
     assert_eq(treasury_cap.name(), name);

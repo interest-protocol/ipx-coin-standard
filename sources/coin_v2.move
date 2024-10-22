@@ -29,9 +29,9 @@ const EBurnCapIsIndestructible: vector<u8> = b"The burn cap is indestructible.";
 public struct CapWitness has drop {
     treasury: address,
     name: TypeName,
-    mint_cap_created: bool,
-    burn_cap_created: bool,
-    metadata_cap_created: bool
+    mint_cap_address: Option<address>,
+    burn_cap_address: Option<address>,
+    metadata_cap_address: Option<address>
 }
 
 public struct MintCap has key, store {
@@ -89,30 +89,36 @@ public fun new<T>(cap: TreasuryCap<T>, ctx: &mut TxContext): (TreasuryCapV2, Cap
     CapWitness { 
         treasury, 
         name, 
-        mint_cap_created: false, 
-        burn_cap_created: false, 
-        metadata_cap_created: false 
+        mint_cap_address: option::none(), 
+        burn_cap_address: option::none(), 
+        metadata_cap_address: option::none() 
     }
    )
 }
 
 public fun create_mint_cap(witness: &mut CapWitness, ctx: &mut TxContext): MintCap {
-    assert!(!witness.mint_cap_created, ECapAlreadyCreated);
-    witness.mint_cap_created = true;
+    assert!(witness.mint_cap_address.is_none(), ECapAlreadyCreated);
+
+    let id = object::new(ctx);
+
+    witness.mint_cap_address = option::some(id.to_address());
 
     MintCap {
-        id: object::new(ctx),
+        id,
         treasury: witness.treasury,
         name: witness.name
     }
 }
 
 public fun create_burn_cap(witness: &mut CapWitness, ctx: &mut TxContext): BurnCap {
-    assert!(!witness.burn_cap_created, ECapAlreadyCreated);
-    witness.burn_cap_created = true;
+    assert!(witness.burn_cap_address.is_none(), ECapAlreadyCreated);
+    
+    let id = object::new(ctx);
+    
+    witness.burn_cap_address = option::some(id.to_address());
     
     BurnCap {
-        id: object::new(ctx),
+        id,
         treasury: witness.treasury,
         name: witness.name,
         indestructible: false
@@ -120,11 +126,14 @@ public fun create_burn_cap(witness: &mut CapWitness, ctx: &mut TxContext): BurnC
 }
 
 public fun create_indestructible_burn_cap(witness: &mut CapWitness, ctx: &mut TxContext): BurnCap {
-    assert!(!witness.burn_cap_created, ECapAlreadyCreated);
-    witness.burn_cap_created = true;
+    assert!(witness.burn_cap_address.is_none(), ECapAlreadyCreated);
+    
+    let id = object::new(ctx);
+
+    witness.burn_cap_address = option::some(id.to_address());
     
     BurnCap {
-        id: object::new(ctx),
+        id,
         treasury: witness.treasury,
         name: witness.name,
         indestructible: true
@@ -132,11 +141,14 @@ public fun create_indestructible_burn_cap(witness: &mut CapWitness, ctx: &mut Tx
 }
 
 public fun create_metadata_cap(witness: &mut CapWitness, ctx: &mut TxContext): MetadataCap {
-    assert!(!witness.metadata_cap_created, ECapAlreadyCreated);
-    witness.metadata_cap_created = true;
+    assert!(witness.metadata_cap_address.is_none(), ECapAlreadyCreated);
+
+    let id = object::new(ctx);
+
+    witness.metadata_cap_address = option::some(id.to_address());
     
     MetadataCap {
-        id: object::new(ctx),
+        id,
         treasury: witness.treasury,
         name: witness.name
     }
@@ -285,6 +297,22 @@ public fun metadata_cap_name(cap: &MetadataCap): TypeName {
     cap.name
 }
 
+public fun mint_cap_address(witness: &CapWitness): Option<address> {
+    witness.mint_cap_address
+}
+
+public fun burn_cap_address(witness: &CapWitness): Option<address> {
+    witness.burn_cap_address
+}
+
+public fun metadata_cap_address(witness: &CapWitness): Option<address> {
+    witness.metadata_cap_address
+}
+
+public fun indestructible(cap: &BurnCap): bool {
+    cap.indestructible
+}
+
 // === Method Aliases ===  
 
 public use fun destroy_burn_cap as BurnCap.destroy;
@@ -299,25 +327,3 @@ public use fun treasury_cap_name as TreasuryCapV2.name;
 public use fun mint_cap_name as MintCap.name;
 public use fun burn_cap_name as BurnCap.name;
 public use fun metadata_cap_name as MetadataCap.name;
-
-// === Test Functions ===  
-
-#[test_only]
-public fun mint_cap_created(witness: &CapWitness): bool {
-    witness.mint_cap_created
-}
-
-#[test_only]
-public fun burn_cap_created(witness: &CapWitness): bool {
-    witness.burn_cap_created
-}
-
-#[test_only]
-public fun metadata_cap_created(witness: &CapWitness): bool {
-    witness.metadata_cap_created
-}
-
-#[test_only]
-public fun indestructible(cap: &BurnCap): bool {
-    cap.indestructible
-}
