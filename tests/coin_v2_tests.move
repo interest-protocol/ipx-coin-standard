@@ -56,6 +56,8 @@ fun test_end_to_end() {
     assert_eq(mint_cap.name(), name);
     assert_eq(burn_cap.name(), name);
     assert_eq(metadata_cap.name(), name);
+    assert_eq(witness.name(), name);
+    assert_eq(witness.treasury(), object::id(&treasury_cap).to_address());
 
     let aptos_coin = treasury_cap.mint<APTOS>(&mint_cap, 100, scenario.ctx());
 

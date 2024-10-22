@@ -269,6 +269,10 @@ public fun total_supply<T>(self: &TreasuryCapV2): u64 {
     cap.total_supply()
 }
 
+public fun cap_witness_treasury(witness: &CapWitness): address {
+    witness.treasury
+}
+
 public fun mint_cap_treasury(cap: &MintCap): address {
     cap.treasury
 }
@@ -283,6 +287,10 @@ public fun metadata_cap_treasury(cap: &MetadataCap): address {
 
 public fun treasury_cap_name(cap: &TreasuryCapV2): TypeName {
     cap.name
+}
+
+public fun cap_witness_name(witness: &CapWitness): TypeName {
+    witness.name
 }
 
 public fun mint_cap_name(cap: &MintCap): TypeName {
@@ -319,11 +327,13 @@ public use fun destroy_burn_cap as BurnCap.destroy;
 public use fun destroy_mint_cap as MintCap.destroy;
 public use fun destroy_metadata_cap as MetadataCap.destroy;
 
+public use fun cap_witness_treasury as CapWitness.treasury;
 public use fun mint_cap_treasury as MintCap.treasury;
 public use fun burn_cap_treasury as BurnCap.treasury;
 public use fun metadata_cap_treasury as MetadataCap.treasury;
 
 public use fun treasury_cap_name as TreasuryCapV2.name;
+public use fun cap_witness_name as CapWitness.name;
 public use fun mint_cap_name as MintCap.name;
 public use fun burn_cap_name as BurnCap.name;
 public use fun metadata_cap_name as MetadataCap.name;
