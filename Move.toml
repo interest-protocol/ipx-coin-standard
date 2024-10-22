@@ -3,11 +3,11 @@ name = "CoinV2"
 edition = "2024.beta"
 license = "MIT"          
 authors = ["Jose Cerqueira (jose@interestprotocol.com)"] 
-# published-at = "0x465c6e49d81922f4fbb3ad9071b04aa0e08c6ba11ee147fd6c3b43a76a6d2b34"
+published-at = "0x6ae119a4ececaff1759043504e7a1fcbf3b93c45f670f1a2ab397bad9530993c"
 
 [dependencies]
 Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/mainnet" }
 
 [addresses]
-coin_v2 = "0x0"
+coin_v2 = "0x6ae119a4ececaff1759043504e7a1fcbf3b93c45f670f1a2ab397bad9530993c"
 sui = "0x2"
