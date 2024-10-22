@@ -60,6 +60,12 @@ public struct TreasuryCapV2 has key, store {
 
 // === Events ===  
 
+public struct New has copy, drop {
+    name: TypeName,
+    treasury: address,
+    treasury_v2: address
+}
+
 public struct Mint has drop, copy(TypeName, u64) 
 
 public struct Burn has drop, copy(TypeName, u64) 
@@ -81,14 +87,21 @@ public fun new<T>(cap: TreasuryCap<T>, ctx: &mut TxContext): (TreasuryCapV2, Cap
         can_burn: false,
     };
 
+    let treasury_v2 = treasury_cap_v2.id.to_address();
+    let treasury = object::id(&cap).to_address();
+
     dof::add(&mut treasury_cap_v2.id, name, cap);
 
-    let treasury = treasury_cap_v2.id.to_address();
+    emit(New {
+        name,
+        treasury,
+        treasury_v2
+    });
 
    (
     treasury_cap_v2,
     CapWitness { 
-        treasury, 
+        treasury: treasury_v2, 
         name, 
         mint_cap_address: option::none(), 
         burn_cap_address: option::none(), 

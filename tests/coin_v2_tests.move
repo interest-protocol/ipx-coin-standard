@@ -62,7 +62,7 @@ fun test_end_to_end() {
 
     let effects = scenario.next_tx(ADMIN);
 
-    assert_eq(effects.num_user_events(), 1);
+    assert_eq(effects.num_user_events(), 2);
 
     assert_eq(treasury_cap.total_supply<APTOS>(), 100);
     assert_eq(aptos_coin.value(), 100);
