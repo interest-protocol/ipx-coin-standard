@@ -22,7 +22,7 @@ const EInvalidCap: vector<u8> = b"The cap does not match the treasury.";
 const ECapAlreadyCreated: vector<u8> = b"The cap has already been created.";
 
 #[error]
-const EBurnCapIsIndestructible: vector<u8> = b"The burn cap is indestructible.";
+const ETreasuryCannotBurn: vector<u8> = b"The treasury cannot burn.";
 
 // === Structs === 
 
@@ -43,7 +43,6 @@ public struct MintCap has key, store {
 public struct BurnCap has key, store {
     id: UID,
     treasury: address,
-    indestructible: bool,
     name: TypeName
 }
 
@@ -55,7 +54,8 @@ public struct MetadataCap has key, store {
 
 public struct TreasuryCapV2 has key, store {
     id: UID,
-    name: TypeName
+    name: TypeName,
+    can_burn: bool,
 }
 
 // === Events ===  
@@ -77,7 +77,8 @@ public fun new<T>(cap: TreasuryCap<T>, ctx: &mut TxContext): (TreasuryCapV2, Cap
 
     let mut treasury_cap_v2 = TreasuryCapV2 {
         id: object::new(ctx), 
-        name
+        name,
+        can_burn: false,
     };
 
     dof::add(&mut treasury_cap_v2.id, name, cap);
@@ -120,23 +121,7 @@ public fun create_burn_cap(witness: &mut CapWitness, ctx: &mut TxContext): BurnC
     BurnCap {
         id,
         treasury: witness.treasury,
-        name: witness.name,
-        indestructible: false
-    }
-}
-
-public fun create_indestructible_burn_cap(witness: &mut CapWitness, ctx: &mut TxContext): BurnCap {
-    assert!(witness.burn_cap_address.is_none(), ECapAlreadyCreated);
-    
-    let id = object::new(ctx);
-
-    witness.burn_cap_address = option::some(id.to_address());
-    
-    BurnCap {
-        id,
-        treasury: witness.treasury,
-        name: witness.name,
-        indestructible: true
+        name: witness.name
     }
 }
 
@@ -154,9 +139,17 @@ public fun create_metadata_cap(witness: &mut CapWitness, ctx: &mut TxContext): M
     }
 }
 
+public fun add_burn_capability(witness: &mut CapWitness, self: &mut TreasuryCapV2) {
+    assert!(witness.burn_cap_address.is_none(), ECapAlreadyCreated);
+
+    witness.burn_cap_address = option::some(self.id.to_address());
+    
+    self.can_burn = true;
+}
+
 public fun mint<T>(
-    self: &mut TreasuryCapV2, 
     cap: &MintCap,
+    self: &mut TreasuryCapV2,
     amount: u64,
     ctx: &mut TxContext
 ): Coin<T> {
@@ -169,12 +162,25 @@ public fun mint<T>(
     cap.mint(amount, ctx)
 }   
 
-public fun burn<T>(
-    self: &mut TreasuryCapV2, 
+public fun cap_burn<T>(
     cap: &BurnCap,
+    self: &mut TreasuryCapV2, 
     coin: Coin<T>
 ) {
     assert!(cap.treasury == self.id.to_address(), EInvalidCap);
+
+    emit(Burn(self.name, coin.value()));
+
+    let cap = dof::borrow_mut<TypeName, TreasuryCap<T>>(&mut self.id, self.name);
+
+    cap.burn(coin);
+}
+
+public fun treasury_burn<T>(
+    self: &mut TreasuryCapV2, 
+    coin: Coin<T>
+) {
+    assert!(self.can_burn, ETreasuryCannotBurn);
 
     emit(Burn(self.name, coin.value()));
 
@@ -244,8 +250,6 @@ public fun destroy_mint_cap(cap: MintCap) {
 }
 
 public fun destroy_burn_cap(cap: BurnCap) {
-    assert!(!cap.indestructible, EBurnCapIsIndestructible);
-
     let BurnCap { id, name, .. } = cap;
 
     emit(DestroyBurnCap(name));
@@ -267,6 +271,10 @@ public fun total_supply<T>(self: &TreasuryCapV2): u64 {
     let cap = dof::borrow<TypeName, TreasuryCap<T>>(&self.id, self.name);      
 
     cap.total_supply()
+}
+
+public fun can_burn(self: &TreasuryCapV2): bool {
+    self.can_burn
 }
 
 public fun cap_witness_treasury(witness: &CapWitness): address {
@@ -317,11 +325,10 @@ public fun metadata_cap_address(witness: &CapWitness): Option<address> {
     witness.metadata_cap_address
 }
 
-public fun indestructible(cap: &BurnCap): bool {
-    cap.indestructible
-}
-
 // === Method Aliases ===  
+
+public use fun cap_burn as BurnCap.burn;
+public use fun treasury_burn as TreasuryCapV2.burn;
 
 public use fun destroy_burn_cap as BurnCap.destroy;
 public use fun destroy_mint_cap as MintCap.destroy;

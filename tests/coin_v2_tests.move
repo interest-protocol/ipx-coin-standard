@@ -50,7 +50,6 @@ fun test_end_to_end() {
     assert_eq(witness.mint_cap_address().destroy_some(), object::id(&mint_cap).to_address());
     assert_eq(witness.burn_cap_address().destroy_some(), object::id(&burn_cap).to_address());
     assert_eq(witness.metadata_cap_address().destroy_some(), object::id(&metadata_cap).to_address());
-    assert_eq(burn_cap.indestructible(), false);
 
     assert_eq(treasury_cap.name(), name);
     assert_eq(mint_cap.name(), name);
@@ -59,7 +58,7 @@ fun test_end_to_end() {
     assert_eq(witness.name(), name);
     assert_eq(witness.treasury(), object::id(&treasury_cap).to_address());
 
-    let aptos_coin = treasury_cap.mint<APTOS>(&mint_cap, 100, scenario.ctx());
+    let aptos_coin = mint_cap.mint<APTOS>(&mut treasury_cap, 100, scenario.ctx());
 
     let effects = scenario.next_tx(ADMIN);
 
@@ -68,7 +67,7 @@ fun test_end_to_end() {
     assert_eq(treasury_cap.total_supply<APTOS>(), 100);
     assert_eq(aptos_coin.value(), 100);
 
-    treasury_cap.burn<APTOS>(&burn_cap, aptos_coin);
+    burn_cap.burn<APTOS>(&mut treasury_cap, aptos_coin);
 
     let effects = scenario.next_tx(ADMIN);
 
@@ -78,6 +77,7 @@ fun test_end_to_end() {
 
     let treasury_address = object::id(&treasury_cap).to_address();
 
+    assert_eq(treasury_cap.can_burn(), false);
     assert_eq(treasury_address, mint_cap.treasury());
     assert_eq(treasury_address, burn_cap.treasury());
     assert_eq(treasury_address, metadata_cap.treasury());
@@ -102,17 +102,58 @@ fun test_end_to_end() {
 }
 
 #[test]
-#[expected_failure(abort_code = coin_v2::EBurnCapIsIndestructible)]
-fun test_burn_cap_is_indestructible() {
+fun test_treasury_burn() {
+    let mut scenario = ts::begin(ADMIN); 
+
+    aptos::init_for_testing(scenario.ctx());
+
+    scenario.next_tx(ADMIN);
+
+    let mut cap = scenario.take_from_sender<TreasuryCap<APTOS>>();
+    let aptos_coin = cap.mint<APTOS>( 100, scenario.ctx());
+
+    let (mut treasury_cap, mut witness) = coin_v2::new(cap, scenario.ctx());
+
+    witness.add_burn_capability(&mut treasury_cap);
+
+    treasury_cap.burn(aptos_coin);
+
+    destroy(treasury_cap);
+    destroy(scenario);
+}
+
+#[test]
+#[expected_failure(abort_code = coin_v2::ETreasuryCannotBurn)]
+fun test_treasury_cannot_burn() {
+    let mut scenario = ts::begin(ADMIN); 
+
+    aptos::init_for_testing(scenario.ctx());
+
+    scenario.next_tx(ADMIN);
+
+    let mut cap = scenario.take_from_sender<TreasuryCap<APTOS>>();
+    let aptos_coin = cap.mint<APTOS>( 100, scenario.ctx());
+
+    let (mut treasury_cap, _) = coin_v2::new(cap, scenario.ctx());
+
+    treasury_cap.burn(aptos_coin);
+
+    destroy(treasury_cap);
+    destroy(scenario);
+}
+
+#[test]
+#[expected_failure(abort_code = coin_v2::ECapAlreadyCreated)]
+fun test_burn_cap_already_created_for_treasury() {
     let mut scenario = ts::begin(ADMIN); 
 
     let eth_treasury_cap = coin::create_treasury_cap_for_testing<ETH>(scenario.ctx());
 
-    let (treasury_cap_v2, mut witness) = coin_v2::new(eth_treasury_cap, scenario.ctx());
+    let (mut treasury_cap_v2, mut witness) = coin_v2::new(eth_treasury_cap, scenario.ctx());
 
-    let burn_cap = witness.create_indestructible_burn_cap(scenario.ctx()); 
+    let burn_cap = witness.create_burn_cap(scenario.ctx());
 
-    assert_eq(burn_cap.indestructible(), true);
+    witness.add_burn_capability(&mut treasury_cap_v2);
 
     burn_cap.destroy();
     destroy(scenario); 
@@ -171,7 +212,7 @@ fun test_invalid_mint_cap() {
 
     let eth_mint_cap = eth_cap_witness.create_mint_cap(scenario.ctx());
 
-    let aptos_coin = aptos_treasury_cap_v2.mint<APTOS>(&eth_mint_cap, 100, scenario.ctx());
+    let aptos_coin = eth_mint_cap.mint<APTOS>(&mut aptos_treasury_cap_v2, 100, scenario.ctx());
 
     destroy(scenario); 
     destroy(aptos_coin);
@@ -201,7 +242,7 @@ fun test_invalid_burn_cap() {
 
     let eth_burn_cap = eth_cap_witness.create_burn_cap(scenario.ctx());
 
-    aptos_treasury_cap_v2.burn<APTOS>(&eth_burn_cap, aptos_coin);
+    eth_burn_cap.burn<APTOS>(&mut aptos_treasury_cap_v2, aptos_coin);
 
     destroy(scenario); 
     destroy(aptos_treasury_cap_v2);
