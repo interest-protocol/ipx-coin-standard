@@ -5,8 +5,10 @@
 ### It adds the following capabilities:
 
 - `MintCap` to mint the coins
-- `BurnCap` to burn the coins
+- `BurnCap` to burn coins
 - `MetadataCap` to manage the metadata of coins
+
+The deployer can opt to not mint a `BurnCap` and instead allow anyone to burn his/her own coins.
 
 ## Immutable
 
