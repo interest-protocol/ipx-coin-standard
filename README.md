@@ -1,4 +1,4 @@
-# Coin V2
+# IPX Coin Standard
 
 ## It wraps `sui::coin::TreasuryCap` and adds capabilities to mint, burn and manage the metadata of coins.
 
@@ -14,4 +14,4 @@
 
 ## Mainnet Code
 
-[Suivision](https://suiscan.xyz/mainnet/object/0x644c3b903a9636eba77e56cefd7c207734fb80dbf9a16af10f33ce03cbb65670/contracts)
+[Explorer](https://suiscan.xyz/mainnet/object/0x644c3b903a9636eba77e56cefd7c207734fb80dbf9a16af10f33ce03cbb65670/contracts)
