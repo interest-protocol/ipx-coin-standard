@@ -1,13 +1,13 @@
 [package]
-name = "CoinV2"
+name = "IPXCoin"
 edition = "2024.beta"
 license = "MIT"          
 authors = ["Jose Cerqueira (jose@interestprotocol.com)"] 
-published-at = "0x908547cd1e1f0d76330ab995dc2a1feb765db1dd98047c08426dff0d95133afe"
+# published-at = "0x908547cd1e1f0d76330ab995dc2a1feb765db1dd98047c08426dff0d95133afe"
 
 [dependencies]
 Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/mainnet" }
 
 [addresses]
-coin_v2 = "0x908547cd1e1f0d76330ab995dc2a1feb765db1dd98047c08426dff0d95133afe"
+ipx_coin = "0x0"
 sui = "0x2"
