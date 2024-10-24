@@ -1,5 +1,5 @@
 #[test_only]
-module ipx_coin::aptos;
+module ipx_coin_standard::aptos;
 
 use sui::coin;
 

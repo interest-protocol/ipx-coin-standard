@@ -1,4 +1,4 @@
-module ipx_coin::ipx_coin;
+module ipx_coin_standard::ipx_coin_standard;
 // === Imports === 
 
 use std::{
@@ -52,7 +52,7 @@ public struct MetadataCap has key, store {
     name: TypeName
 }
 
-public struct IPXTreasuryCap has key, store {
+public struct IPXTreasuryStandard has key, store {
     id: UID,
     name: TypeName,
     can_burn: bool,
@@ -78,19 +78,19 @@ public struct DestroyMetadataCap has drop, copy(TypeName)
 
 // === Public Mutative === 
 
-public fun new<T>(cap: TreasuryCap<T>, ctx: &mut TxContext): (IPXTreasuryCap, CapWitness) {
+public fun new<T>(cap: TreasuryCap<T>, ctx: &mut TxContext): (IPXTreasuryStandard, CapWitness) {
     let name = type_name::get<T>();
 
-    let mut ipx_cap = IPXTreasuryCap {
+    let mut ipx_treasury_standard = IPXTreasuryStandard {
         id: object::new(ctx), 
         name,
         can_burn: false,
     };
 
-    let ipx_treasury = ipx_cap.id.to_address();
+    let ipx_treasury = ipx_treasury_standard.id.to_address();
     let treasury = object::id(&cap).to_address();
 
-    dof::add(&mut ipx_cap.id, name, cap);
+    dof::add(&mut ipx_treasury_standard.id, name, cap);
 
     emit(New {
         name,
@@ -99,7 +99,7 @@ public fun new<T>(cap: TreasuryCap<T>, ctx: &mut TxContext): (IPXTreasuryCap, Ca
     });
 
    (
-    ipx_cap,
+    ipx_treasury_standard,
     CapWitness { 
         treasury: ipx_treasury, 
         name, 
@@ -152,7 +152,7 @@ public fun create_metadata_cap(witness: &mut CapWitness, ctx: &mut TxContext): M
     }
 }
 
-public fun add_burn_capability(witness: &mut CapWitness, self: &mut IPXTreasuryCap) {
+public fun add_burn_capability(witness: &mut CapWitness, self: &mut IPXTreasuryStandard) {
     assert!(witness.burn_cap_address.is_none(), ECapAlreadyCreated);
 
     witness.burn_cap_address = option::some(self.id.to_address());
@@ -162,7 +162,7 @@ public fun add_burn_capability(witness: &mut CapWitness, self: &mut IPXTreasuryC
 
 public fun mint<T>(
     cap: &MintCap,
-    self: &mut IPXTreasuryCap,
+    self: &mut IPXTreasuryStandard,
     amount: u64,
     ctx: &mut TxContext
 ): Coin<T> {
@@ -177,7 +177,7 @@ public fun mint<T>(
 
 public fun cap_burn<T>(
     cap: &BurnCap,
-    self: &mut IPXTreasuryCap, 
+    self: &mut IPXTreasuryStandard, 
     coin: Coin<T>
 ) {
     assert!(cap.treasury == self.id.to_address(), EInvalidCap);
@@ -190,7 +190,7 @@ public fun cap_burn<T>(
 }
 
 public fun treasury_burn<T>(
-    self: &mut IPXTreasuryCap, 
+    self: &mut IPXTreasuryStandard, 
     coin: Coin<T>
 ) {
     assert!(self.can_burn, ETreasuryCannotBurn);
@@ -203,7 +203,7 @@ public fun treasury_burn<T>(
 }
 
 public fun update_name<T>(
-    self: &IPXTreasuryCap, 
+    self: &IPXTreasuryStandard, 
     metadata: &mut CoinMetadata<T>, 
     cap: &MetadataCap,
     name: string::String
@@ -216,7 +216,7 @@ public fun update_name<T>(
 }
 
 public fun update_symbol<T>(
-    self: &IPXTreasuryCap, 
+    self: &IPXTreasuryStandard, 
     metadata: &mut CoinMetadata<T>, 
     cap: &MetadataCap,
     symbol: ascii::String
@@ -229,7 +229,7 @@ public fun update_symbol<T>(
 }
 
 public fun update_description<T>(
-    self: &IPXTreasuryCap, 
+    self: &IPXTreasuryStandard, 
     metadata: &mut CoinMetadata<T>, 
     cap: &MetadataCap,
     description: string::String
@@ -242,7 +242,7 @@ public fun update_description<T>(
 }
 
 public fun update_icon_url<T>(
-    self: &IPXTreasuryCap, 
+    self: &IPXTreasuryStandard, 
     metadata: &mut CoinMetadata<T>, 
     cap: &MetadataCap,
     url: ascii::String
@@ -280,13 +280,13 @@ public fun destroy_metadata_cap(cap: MetadataCap) {
 
 // === Public View Functions === 
 
-public fun total_supply<T>(self: &IPXTreasuryCap): u64 {
+public fun total_supply<T>(self: &IPXTreasuryStandard): u64 {
     let cap = dof::borrow<TypeName, TreasuryCap<T>>(&self.id, self.name);      
 
     cap.total_supply()
 }
 
-public fun can_burn(self: &IPXTreasuryCap): bool {
+public fun can_burn(self: &IPXTreasuryStandard): bool {
     self.can_burn
 }
 
@@ -306,7 +306,7 @@ public fun metadata_cap_treasury(cap: &MetadataCap): address {
     cap.treasury
 }
 
-public fun treasury_cap_name(cap: &IPXTreasuryCap): TypeName {
+public fun treasury_cap_name(cap: &IPXTreasuryStandard): TypeName {
     cap.name
 }
 
@@ -341,7 +341,7 @@ public fun metadata_cap_address(witness: &CapWitness): Option<address> {
 // === Method Aliases ===  
 
 public use fun cap_burn as BurnCap.burn;
-public use fun treasury_burn as IPXTreasuryCap.burn;
+public use fun treasury_burn as IPXTreasuryStandard.burn;
 
 public use fun destroy_burn_cap as BurnCap.destroy;
 public use fun destroy_mint_cap as MintCap.destroy;
@@ -352,7 +352,7 @@ public use fun mint_cap_treasury as MintCap.treasury;
 public use fun burn_cap_treasury as BurnCap.treasury;
 public use fun metadata_cap_treasury as MetadataCap.treasury;
 
-public use fun treasury_cap_name as IPXTreasuryCap.name;
+public use fun treasury_cap_name as IPXTreasuryStandard.name;
 public use fun cap_witness_name as CapWitness.name;
 public use fun mint_cap_name as MintCap.name;
 public use fun burn_cap_name as BurnCap.name;
