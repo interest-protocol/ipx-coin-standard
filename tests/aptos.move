@@ -3,7 +3,7 @@ module ipx_coin_standard::aptos;
 
 use sui::coin;
 
-public struct APTOS has drop() 
+public struct APTOS has drop ()
 
 fun init(otw: APTOS, ctx: &mut TxContext) {
     let (cap, metadata) = coin::create_currency(
