@@ -11,6 +11,8 @@ const ECapAlreadyCreated: u64 = 1;
 
 const ETreasuryCannotBurn: u64 = 2;
 
+const EInvalidTreasury: u64 = 3;
+
 // === Structs ===
 
 public struct CapWitness {
@@ -254,7 +256,7 @@ public fun update_icon_url<T>(
 public fun destroy_mint_cap(cap: MintCap, self: &mut IPXTreasuryStandard) {
     let MintCap { id, name, treasury } = cap;
 
-    assert!(treasury == self.id.to_address(), EInvalidCap);
+    assert!(treasury == self.id.to_address(), EInvalidTreasury);
 
     self.mint_cap = option::none();
 
@@ -266,7 +268,7 @@ public fun destroy_mint_cap(cap: MintCap, self: &mut IPXTreasuryStandard) {
 public fun destroy_burn_cap(cap: BurnCap, self: &mut IPXTreasuryStandard) {
     let BurnCap { id, name, treasury } = cap;
 
-    assert!(treasury == self.id.to_address(), EInvalidCap);
+    assert!(treasury == self.id.to_address(), EInvalidTreasury);
 
     self.burn_cap = option::none();
 
@@ -278,7 +280,7 @@ public fun destroy_burn_cap(cap: BurnCap, self: &mut IPXTreasuryStandard) {
 public fun destroy_metadata_cap(cap: MetadataCap, self: &mut IPXTreasuryStandard) {
     let MetadataCap { id, name, treasury } = cap;
 
-    assert!(treasury == self.id.to_address(), EInvalidCap);
+    assert!(treasury == self.id.to_address(), EInvalidTreasury);
 
     self.metadata_cap = option::none();
 

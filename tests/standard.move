@@ -341,3 +341,60 @@ fun test_metadata_cap_already_created() {
 
     abort
 }
+
+#[test]
+#[expected_failure(abort_code = ipx_coin_standard::EInvalidTreasury)]
+fun test_destroy_mint_cap_invalid_treasury() {
+    let mut scenario = ts::begin(ADMIN);
+
+    let eth_treasury_cap = coin::create_treasury_cap_for_testing<ETH>(scenario.ctx());
+    let aptos_treasury_cap = coin::create_treasury_cap_for_testing<APTOS>(scenario.ctx());
+
+    let (_treasury_cap_v2, mut witness) = ipx_coin_standard::new(eth_treasury_cap, scenario.ctx());
+
+    let (mut aptos_treasury_cap_v2, _cap_witness) = ipx_coin_standard::new(aptos_treasury_cap, scenario.ctx());
+
+    let metadata_cap = witness.create_metadata_cap(scenario.ctx());
+    
+    metadata_cap.destroy(&mut aptos_treasury_cap_v2);
+
+    abort
+}
+
+#[test]
+#[expected_failure(abort_code = ipx_coin_standard::EInvalidTreasury)]
+fun test_destroy_burn_cap_invalid_treasury() {
+    let mut scenario = ts::begin(ADMIN);
+
+    let eth_treasury_cap = coin::create_treasury_cap_for_testing<ETH>(scenario.ctx());
+    let aptos_treasury_cap = coin::create_treasury_cap_for_testing<APTOS>(scenario.ctx());
+
+    let (_treasury_cap_v2, mut witness) = ipx_coin_standard::new(eth_treasury_cap, scenario.ctx());
+
+    let (mut aptos_treasury_cap_v2, _cap_witness) = ipx_coin_standard::new(aptos_treasury_cap, scenario.ctx());
+
+    let burn_cap = witness.create_burn_cap(scenario.ctx());
+    
+    burn_cap.destroy(&mut aptos_treasury_cap_v2);
+
+    abort
+}
+
+#[test]
+#[expected_failure(abort_code = ipx_coin_standard::EInvalidTreasury)]
+fun test_destroy_metadata_cap_invalid_treasury() {
+    let mut scenario = ts::begin(ADMIN);
+
+    let eth_treasury_cap = coin::create_treasury_cap_for_testing<ETH>(scenario.ctx());
+    let aptos_treasury_cap = coin::create_treasury_cap_for_testing<APTOS>(scenario.ctx());
+
+    let (_treasury_cap_v2, mut witness) = ipx_coin_standard::new(eth_treasury_cap, scenario.ctx());
+
+    let (mut aptos_treasury_cap_v2, _cap_witness) = ipx_coin_standard::new(aptos_treasury_cap, scenario.ctx());
+
+    let metadata_cap = witness.create_metadata_cap(scenario.ctx());
+    
+    metadata_cap.destroy(&mut aptos_treasury_cap_v2);
+
+    abort
+}
