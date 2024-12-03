@@ -1,22 +1,15 @@
 module ipx_coin_standard::ipx_coin_standard;
 
-use std::ascii;
-use std::string;
-use std::type_name::{Self, TypeName};
-use sui::coin::{TreasuryCap, CoinMetadata, Coin};
-use sui::dynamic_object_field as dof;
-use sui::event::emit;
+use std::{ascii, string, type_name::{Self, TypeName}};
+use sui::{coin::{TreasuryCap, CoinMetadata, Coin}, dynamic_object_field as dof, event::emit};
 
 // === Errors ===
 
-#[error]
-const EInvalidCap: vector<u8> = b"The cap does not match the treasury.";
+const EInvalidCap: u64 = 0;
 
-#[error]
-const ECapAlreadyCreated: vector<u8> = b"The cap has already been created.";
+const ECapAlreadyCreated: u64 = 1;
 
-#[error]
-const ETreasuryCannotBurn: vector<u8> = b"The treasury cannot burn.";
+const ETreasuryCannotBurn: u64 = 2;
 
 // === Structs ===
 
@@ -88,7 +81,7 @@ public fun new<T>(cap: TreasuryCap<T>, ctx: &mut TxContext): (IPXTreasuryStandar
     };
 
     let ipx_treasury = ipx_treasury_standard.id.to_address();
-    let treasury = object::id(&cap).to_address();
+    let treasury = object::id_address(&cap);
 
     dof::add(&mut ipx_treasury_standard.id, name, cap);
 
@@ -160,8 +153,11 @@ public fun add_burn_capability(witness: &mut CapWitness, self: &mut IPXTreasuryS
     self.can_burn = true;
 }
 
-public fun destroy_cap_witness(self: &mut IPXTreasuryStandard, witness: CapWitness) {
-    let CapWitness { mint_cap_address, burn_cap_address, metadata_cap_address, .. } = witness;
+public fun destroy_cap_witness(witness: CapWitness, self: &mut IPXTreasuryStandard) {
+    let CapWitness { mint_cap_address, burn_cap_address, metadata_cap_address, treasury, .. } =
+        witness;
+
+    assert!(treasury == self.id.to_address(), EInvalidCap);
 
     self.mint_cap = mint_cap_address;
     self.burn_cap = burn_cap_address;
@@ -255,24 +251,36 @@ public fun update_icon_url<T>(
     cap.update_icon_url(metadata, url);
 }
 
-public fun destroy_mint_cap(cap: MintCap) {
-    let MintCap { id, name, .. } = cap;
+public fun destroy_mint_cap(cap: MintCap, self: &mut IPXTreasuryStandard) {
+    let MintCap { id, name, treasury } = cap;
+
+    assert!(treasury == self.id.to_address(), EInvalidCap);
+
+    self.mint_cap = option::none();
 
     emit(DestroyMintCap(name));
 
     id.delete();
 }
 
-public fun destroy_burn_cap(cap: BurnCap) {
-    let BurnCap { id, name, .. } = cap;
+public fun destroy_burn_cap(cap: BurnCap, self: &mut IPXTreasuryStandard) {
+    let BurnCap { id, name, treasury } = cap;
+
+    assert!(treasury == self.id.to_address(), EInvalidCap);
+
+    self.burn_cap = option::none();
 
     emit(DestroyBurnCap(name));
 
     id.delete();
 }
 
-public fun destroy_metadata_cap(cap: MetadataCap) {
-    let MetadataCap { id, name, .. } = cap;
+public fun destroy_metadata_cap(cap: MetadataCap, self: &mut IPXTreasuryStandard) {
+    let MetadataCap { id, name, treasury } = cap;
+
+    assert!(treasury == self.id.to_address(), EInvalidCap);
+
+    self.metadata_cap = option::none();
 
     emit(DestroyMetadataCap(name));
 
@@ -346,6 +354,7 @@ public use fun treasury_burn as IPXTreasuryStandard.burn;
 
 public use fun destroy_burn_cap as BurnCap.destroy;
 public use fun destroy_mint_cap as MintCap.destroy;
+public use fun destroy_cap_witness as CapWitness.destroy;
 public use fun destroy_metadata_cap as MetadataCap.destroy;
 
 public use fun cap_witness_treasury as CapWitness.treasury;

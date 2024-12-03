@@ -108,11 +108,23 @@ fun test_end_to_end() {
     assert_eq(burn_cap_address, object::id(&burn_cap).to_address());
     assert_eq(metadata_cap_address, object::id(&metadata_cap).to_address());
 
-    mint_cap.destroy();
-    burn_cap.destroy();
-    metadata_cap.destroy();
+    witness.destroy(&mut treasury_cap);
 
-    treasury_cap.destroy_cap_witness(witness);
+    let mint_cap_address = treasury_cap.treasury_mint_cap().destroy_some();
+    let burn_cap_address = treasury_cap.treasury_burn_cap().destroy_some();
+    let metadata_cap_address = treasury_cap.treasury_metadata_cap().destroy_some();
+
+    assert_eq(mint_cap_address, object::id(&mint_cap).to_address());
+    assert_eq(burn_cap_address, object::id(&burn_cap).to_address());
+    assert_eq(metadata_cap_address, object::id(&metadata_cap).to_address());
+
+    mint_cap.destroy(&mut treasury_cap);
+    burn_cap.destroy(&mut treasury_cap);
+    metadata_cap.destroy(&mut treasury_cap);
+
+    assert_eq(treasury_cap.treasury_mint_cap().is_none(), true);
+    assert_eq(treasury_cap.treasury_burn_cap().is_none(), true);
+    assert_eq(treasury_cap.treasury_metadata_cap().is_none(), true);
 
     destroy(treasury_cap);
     destroy(metadata);
@@ -136,7 +148,7 @@ fun test_treasury_burn() {
 
     treasury_cap.burn(aptos_coin);
 
-    treasury_cap.destroy_cap_witness(witness);
+    witness.destroy(&mut treasury_cap);
     destroy(treasury_cap);
     destroy(scenario);
 }
@@ -179,7 +191,7 @@ fun test_burn_cap_already_created_for_treasury() {
     witness.add_burn_capability(&mut treasury_cap_v2);
 
     destroy(witness);
-    burn_cap.destroy();
+    burn_cap.destroy(&mut treasury_cap_v2);
     destroy(scenario);
     destroy(treasury_cap_v2);
 }
@@ -239,27 +251,21 @@ fun test_invalid_mint_cap() {
 
     let eth_treasury_cap = coin::create_treasury_cap_for_testing<ETH>(scenario.ctx());
 
-    let (mut aptos_treasury_cap_v2, cap_witness) = ipx_coin_standard::new(
+    let (mut aptos_treasury_cap_v2, _cap_witness) = ipx_coin_standard::new(
         aptos_treasury_cap,
         scenario.ctx(),
     );
 
-    let (eth_treasury_cap_v2, mut eth_cap_witness) = ipx_coin_standard::new(
+    let (_eth_treasury_cap_v2, mut eth_cap_witness) = ipx_coin_standard::new(
         eth_treasury_cap,
         scenario.ctx(),
     );
 
     let eth_mint_cap = eth_cap_witness.create_mint_cap(scenario.ctx());
 
-    let aptos_coin = eth_mint_cap.mint<APTOS>(&mut aptos_treasury_cap_v2, 100, scenario.ctx());
+    eth_mint_cap.mint<APTOS>(&mut aptos_treasury_cap_v2, 100, scenario.ctx()).burn_for_testing();
 
-    destroy(scenario);
-    destroy(aptos_coin);
-    destroy(cap_witness);
-    destroy(eth_cap_witness);
-    destroy(aptos_treasury_cap_v2);
-    destroy(eth_treasury_cap_v2);
-    eth_mint_cap.destroy();
+    abort
 }
 
 #[test]
@@ -277,9 +283,9 @@ fun test_invalid_burn_cap() {
 
     let aptos_coin = cap.mint<APTOS>(100, scenario.ctx());
 
-    let (mut aptos_treasury_cap_v2, cap_witness) = ipx_coin_standard::new(cap, scenario.ctx());
+    let (mut aptos_treasury_cap_v2, _cap_witness) = ipx_coin_standard::new(cap, scenario.ctx());
 
-    let (eth_treasury_cap_v2, mut eth_cap_witness) = ipx_coin_standard::new(
+    let (_eth_treasury_cap_v2, mut eth_cap_witness) = ipx_coin_standard::new(
         eth_cap,
         scenario.ctx(),
     );
@@ -288,12 +294,7 @@ fun test_invalid_burn_cap() {
 
     eth_burn_cap.burn<APTOS>(&mut aptos_treasury_cap_v2, aptos_coin);
 
-    destroy(scenario);
-    destroy(cap_witness);
-    destroy(eth_cap_witness);
-    destroy(aptos_treasury_cap_v2);
-    destroy(eth_treasury_cap_v2);
-    eth_burn_cap.destroy();
+    abort
 }
 
 #[test]
@@ -303,16 +304,12 @@ fun test_mint_cap_already_created() {
 
     let eth_treasury_cap = coin::create_treasury_cap_for_testing<ETH>(scenario.ctx());
 
-    let (treasury_cap_v2, mut witness) = ipx_coin_standard::new(eth_treasury_cap, scenario.ctx());
+    let (_treasury_cap_v2, mut witness) = ipx_coin_standard::new(eth_treasury_cap, scenario.ctx());
 
-    let mint_cap = witness.create_mint_cap(scenario.ctx());
-    let mint_cap_2 = witness.create_mint_cap(scenario.ctx());
+    let _mint_cap = witness.create_mint_cap(scenario.ctx());
+    let _mint_cap_2 = witness.create_mint_cap(scenario.ctx());
 
-    mint_cap.destroy();
-    mint_cap_2.destroy();
-    destroy(witness);
-    destroy(scenario);
-    destroy(treasury_cap_v2);
+    abort
 }
 
 #[test]
@@ -322,16 +319,12 @@ fun test_burn_cap_already_created() {
 
     let eth_treasury_cap = coin::create_treasury_cap_for_testing<ETH>(scenario.ctx());
 
-    let (treasury_cap_v2, mut witness) = ipx_coin_standard::new(eth_treasury_cap, scenario.ctx());
+    let (_treasury_cap_v2, mut witness) = ipx_coin_standard::new(eth_treasury_cap, scenario.ctx());
 
-    let burn_cap = witness.create_burn_cap(scenario.ctx());
-    let burn_cap_2 = witness.create_burn_cap(scenario.ctx());
+    let _burn_cap = witness.create_burn_cap(scenario.ctx());
+    let _burn_cap_2 = witness.create_burn_cap(scenario.ctx());
 
-    burn_cap.destroy();
-    burn_cap_2.destroy();
-    destroy(witness);
-    destroy(scenario);
-    destroy(treasury_cap_v2);
+    abort
 }
 
 #[test]
@@ -341,14 +334,10 @@ fun test_metadata_cap_already_created() {
 
     let eth_treasury_cap = coin::create_treasury_cap_for_testing<ETH>(scenario.ctx());
 
-    let (treasury_cap_v2, mut witness) = ipx_coin_standard::new(eth_treasury_cap, scenario.ctx());
+    let (_treasury_cap_v2, mut witness) = ipx_coin_standard::new(eth_treasury_cap, scenario.ctx());
 
-    let metadata_cap = witness.create_metadata_cap(scenario.ctx());
-    let metadata_cap_2 = witness.create_metadata_cap(scenario.ctx());
+    let _metadata_cap = witness.create_metadata_cap(scenario.ctx());
+    let _metadata_cap_2 = witness.create_metadata_cap(scenario.ctx());
 
-    metadata_cap.destroy();
-    metadata_cap_2.destroy();
-    destroy(witness);
-    destroy(scenario);
-    destroy(treasury_cap_v2);
+    abort
 }
