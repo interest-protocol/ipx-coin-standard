@@ -398,3 +398,20 @@ fun test_destroy_metadata_cap_invalid_treasury() {
 
     abort
 }
+
+#[test]
+#[expected_failure(abort_code = ipx_coin_standard::EInvalidTreasury)]
+fun test_destroy_cap_witness_invalid_treasury() {
+    let mut scenario = ts::begin(ADMIN);
+
+    let eth_treasury_cap = coin::create_treasury_cap_for_testing<ETH>(scenario.ctx());
+    let aptos_treasury_cap = coin::create_treasury_cap_for_testing<APTOS>(scenario.ctx());
+
+    let (_treasury_cap_v2, witness) = ipx_coin_standard::new(eth_treasury_cap, scenario.ctx());
+
+    let (mut aptos_treasury_cap, _cap_witness) = ipx_coin_standard::new(aptos_treasury_cap, scenario.ctx());
+
+    witness.destroy(&mut aptos_treasury_cap);
+
+    abort
+}

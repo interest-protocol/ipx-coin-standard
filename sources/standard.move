@@ -159,7 +159,7 @@ public fun destroy_cap_witness(witness: CapWitness, self: &mut IPXTreasuryStanda
     let CapWitness { mint_cap_address, burn_cap_address, metadata_cap_address, treasury, .. } =
         witness;
 
-    assert!(treasury == self.id.to_address(), EInvalidCap);
+    assert!(treasury == self.id.to_address(), EInvalidTreasury);
 
     self.mint_cap = mint_cap_address;
     self.burn_cap = burn_cap_address;
