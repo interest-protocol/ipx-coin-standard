@@ -164,7 +164,7 @@ public fun destroy_cap_witness(self: &mut IPXTreasuryStandard, witness: CapWitne
     assert!(treasury == self.id.to_address(), EInvalidTreasury);
 
     self.mint_cap = mint_cap_address;
-    self.burn_cap = burn_cap_address;
+    self.burn_cap = if (self.can_burn) { option::none() } else { burn_cap_address };
     self.metadata_cap = metadata_cap_address;
 }
 

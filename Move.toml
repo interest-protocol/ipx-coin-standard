@@ -3,10 +3,10 @@ name = "IPXCoinStandard"
 edition = "2024.beta"
 license = "MIT"          
 authors = ["Jose Cerqueira (jose@interestprotocol.com)"] 
-published-at = "0x8229c908e68d0298554367e205d5fdd047a195193797bc51f2477539b5076b08"
+published-at = "0x6514249c7b1140c38e3d4be9801fd945f85bbfdb1a7af93769b8e0dc7a375046"
 
 [dependencies]
 Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/mainnet" }
 
 [addresses]
-ipx_coin_standard = "0x8229c908e68d0298554367e205d5fdd047a195193797bc51f2477539b5076b08"
+ipx_coin_standard = "0x6514249c7b1140c38e3d4be9801fd945f85bbfdb1a7af93769b8e0dc7a375046"
