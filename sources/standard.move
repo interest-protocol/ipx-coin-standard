@@ -15,7 +15,7 @@ const EInvalidTreasury: u64 = 3;
 
 // === Structs ===
 
-public struct CapWitness {
+public struct Witness {
     treasury: address,
     name: TypeName,
     mint_cap_address: Option<address>,
@@ -70,7 +70,7 @@ public struct DestroyMetadataCap has drop, copy (TypeName)
 
 // === Public Mutative ===
 
-public fun new<T>(cap: TreasuryCap<T>, ctx: &mut TxContext): (IPXTreasuryStandard, CapWitness) {
+public fun new<T>(cap: TreasuryCap<T>, ctx: &mut TxContext): (IPXTreasuryStandard, Witness) {
     let name = type_name::get<T>();
 
     let mut ipx_treasury_standard = IPXTreasuryStandard {
@@ -95,7 +95,7 @@ public fun new<T>(cap: TreasuryCap<T>, ctx: &mut TxContext): (IPXTreasuryStandar
 
     (
         ipx_treasury_standard,
-        CapWitness {
+        Witness {
             treasury: ipx_treasury,
             name,
             mint_cap_address: option::none(),
@@ -107,7 +107,7 @@ public fun new<T>(cap: TreasuryCap<T>, ctx: &mut TxContext): (IPXTreasuryStandar
 
 // === Capabilities API ===
 
-public fun create_mint_cap(witness: &mut CapWitness, ctx: &mut TxContext): MintCap {
+public fun create_mint_cap(witness: &mut Witness, ctx: &mut TxContext): MintCap {
     assert!(witness.mint_cap_address.is_none(), ECapAlreadyCreated);
 
     let id = object::new(ctx);
@@ -121,7 +121,7 @@ public fun create_mint_cap(witness: &mut CapWitness, ctx: &mut TxContext): MintC
     }
 }
 
-public fun create_burn_cap(witness: &mut CapWitness, ctx: &mut TxContext): BurnCap {
+public fun create_burn_cap(witness: &mut Witness, ctx: &mut TxContext): BurnCap {
     assert!(witness.burn_cap_address.is_none(), ECapAlreadyCreated);
 
     let id = object::new(ctx);
@@ -135,7 +135,7 @@ public fun create_burn_cap(witness: &mut CapWitness, ctx: &mut TxContext): BurnC
     }
 }
 
-public fun create_metadata_cap(witness: &mut CapWitness, ctx: &mut TxContext): MetadataCap {
+public fun create_metadata_cap(witness: &mut Witness, ctx: &mut TxContext): MetadataCap {
     assert!(witness.metadata_cap_address.is_none(), ECapAlreadyCreated);
 
     let id = object::new(ctx);
@@ -149,7 +149,7 @@ public fun create_metadata_cap(witness: &mut CapWitness, ctx: &mut TxContext): M
     }
 }
 
-public fun add_burn_capability(witness: &mut CapWitness, self: &mut IPXTreasuryStandard) {
+public fun add_burn_capability(witness: &mut Witness, self: &mut IPXTreasuryStandard) {
     assert!(witness.burn_cap_address.is_none(), ECapAlreadyCreated);
 
     witness.burn_cap_address = option::some(self.id.to_address());
@@ -157,8 +157,8 @@ public fun add_burn_capability(witness: &mut CapWitness, self: &mut IPXTreasuryS
     self.can_burn = true;
 }
 
-public fun destroy_cap_witness(self: &mut IPXTreasuryStandard, witness: CapWitness) {
-    let CapWitness { mint_cap_address, burn_cap_address, metadata_cap_address, treasury, .. } =
+public fun destroy_witness(self: &mut IPXTreasuryStandard, witness: Witness) {
+    let Witness { mint_cap_address, burn_cap_address, metadata_cap_address, treasury, .. } =
         witness;
 
     assert!(treasury == self.id.to_address(), EInvalidTreasury);
@@ -307,7 +307,7 @@ public fun can_burn(self: &IPXTreasuryStandard): bool {
     self.can_burn
 }
 
-public fun cap_witness_treasury(witness: &CapWitness): address {
+public fun witness_treasury(witness: &Witness): address {
     witness.treasury
 }
 
@@ -327,7 +327,7 @@ public fun treasury_cap_name(cap: &IPXTreasuryStandard): TypeName {
     cap.name
 }
 
-public fun cap_witness_name(witness: &CapWitness): TypeName {
+public fun witness_name(witness: &Witness): TypeName {
     witness.name
 }
 
@@ -343,15 +343,15 @@ public fun metadata_cap_name(cap: &MetadataCap): TypeName {
     cap.name
 }
 
-public fun mint_cap_address(witness: &CapWitness): Option<address> {
+public fun mint_cap_address(witness: &Witness): Option<address> {
     witness.mint_cap_address
 }
 
-public fun burn_cap_address(witness: &CapWitness): Option<address> {
+public fun burn_cap_address(witness: &Witness): Option<address> {
     witness.burn_cap_address
 }
 
-public fun metadata_cap_address(witness: &CapWitness): Option<address> {
+public fun metadata_cap_address(witness: &Witness): Option<address> {
     witness.metadata_cap_address
 }
 
@@ -360,13 +360,13 @@ public fun metadata_cap_address(witness: &CapWitness): Option<address> {
 public use fun cap_burn as BurnCap.burn;
 public use fun treasury_burn as IPXTreasuryStandard.burn;
 
-public use fun cap_witness_treasury as CapWitness.treasury;
+public use fun witness_treasury as Witness.treasury;
 public use fun mint_cap_treasury as MintCap.treasury;
 public use fun burn_cap_treasury as BurnCap.treasury;
 public use fun metadata_cap_treasury as MetadataCap.treasury;
 
 public use fun treasury_cap_name as IPXTreasuryStandard.name;
-public use fun cap_witness_name as CapWitness.name;
+public use fun witness_name as Witness.name;
 public use fun mint_cap_name as MintCap.name;
 public use fun burn_cap_name as BurnCap.name;
 public use fun metadata_cap_name as MetadataCap.name;

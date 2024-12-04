@@ -108,7 +108,7 @@ fun test_end_to_end() {
     assert_eq(burn_cap_address, object::id(&burn_cap).to_address());
     assert_eq(metadata_cap_address, object::id(&metadata_cap).to_address());
 
-    treasury_cap.destroy_cap_witness(witness);
+    treasury_cap.destroy_witness(witness);
 
     let mint_cap_address = treasury_cap.treasury_mint_cap().destroy_some();
     let burn_cap_address = treasury_cap.treasury_burn_cap().destroy_some();
@@ -148,7 +148,7 @@ fun test_treasury_burn() {
 
     treasury_cap.burn(aptos_coin);
 
-    treasury_cap.destroy_cap_witness(witness);
+    treasury_cap.destroy_witness(witness);
     destroy(treasury_cap);
     destroy(scenario);
 }
@@ -411,7 +411,7 @@ fun test_destroy_cap_witness_invalid_treasury() {
 
     let (mut aptos_treasury_cap, _cap_witness) = ipx_coin_standard::new(aptos_treasury_cap, scenario.ctx());
 
-    aptos_treasury_cap.destroy_cap_witness(witness);
+    aptos_treasury_cap.destroy_witness(witness);
 
     abort
 }
