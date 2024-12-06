@@ -144,7 +144,7 @@ fun test_treasury_burn() {
 
     let (mut treasury_cap, mut witness) = ipx_coin_standard::new(cap, scenario.ctx());
 
-    witness.add_burn_capability(&mut treasury_cap);
+    witness.allow_public_burn(&mut treasury_cap);
 
     treasury_cap.burn(aptos_coin);
 
@@ -188,7 +188,7 @@ fun test_burn_cap_already_created_for_treasury() {
 
     let burn_cap = witness.create_burn_cap(scenario.ctx());
 
-    witness.add_burn_capability(&mut treasury_cap_v2);
+    witness.allow_public_burn(&mut treasury_cap_v2);
 
     destroy(witness);
     treasury_cap_v2.destroy_burn_cap(burn_cap);
