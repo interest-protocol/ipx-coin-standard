@@ -12,8 +12,8 @@ The deployer can opt to not mint a `BurnCap` and instead allow anyone to burn hi
 
 ## Immutable
 
-[The package is immutable](https://suiscan.xyz/mainnet/tx/A7DpiWDCuzoKCNCnJEF3bbsjG252xtQBA8huzhVLzbf6)
+[The package is immutable](https://suiscan.xyz/mainnet/tx/7zrc2c2NjUCCzqVzp5r9eyMBoaTanRRYuNttwNeSBYK8)
 
 ## Mainnet Code
 
-[Explorer](https://suiscan.xyz/mainnet/object/0x220b57aac1982feea49d9ff4ee9add016e7ce124d5a569ee271610900fbd269e/contracts)
+[Explorer](https://suiscan.xyz/mainnet/object/0x3cdd79627ac6084a6e2c016cb00afd98e666ef07636dc8336a9744461d22bd72/contracts)
