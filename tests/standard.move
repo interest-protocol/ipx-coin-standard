@@ -146,7 +146,7 @@ fun test_maximum_supply() {
 
     let (mut treasury_cap, mut witness) = ipx_coin_standard::new(cap, scenario.ctx());
 
-    witness.allow_public_burn(&mut treasury_cap);
+        witness.allow_public_burn(&mut treasury_cap);
 
     witness.set_maximum_supply( 100);
 

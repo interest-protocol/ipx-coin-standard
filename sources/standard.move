@@ -173,8 +173,14 @@ public fun allow_public_burn(witness: &mut Witness, self: &mut IPXTreasuryStanda
 
 #[allow(implicit_const_copy)]
 public fun destroy_witness<T>(self: &mut IPXTreasuryStandard, witness: Witness) {
-    let Witness { mint_cap_address, burn_cap_address, metadata_cap_address, treasury, maximum_supply,.. } =
-        witness;
+    let Witness {
+        mint_cap_address,
+        burn_cap_address,
+        metadata_cap_address,
+        treasury,
+        maximum_supply,
+        ..,
+    } = witness;
 
     assert!(treasury == self.id.to_address(), EInvalidTreasury);
 
@@ -185,7 +191,11 @@ public fun destroy_witness<T>(self: &mut IPXTreasuryStandard, witness: Witness) 
     assert!(maximum_supply_value >= cap.total_supply(), EMaximumSupplyExceeded);
 
     self.mint_cap = mint_cap_address;
-    self.burn_cap = if (self.can_burn) { option::none() } else { burn_cap_address };
+    self.burn_cap = if (self.can_burn) {
+            option::none()
+        } else {
+            burn_cap_address
+        };
     self.metadata_cap = metadata_cap_address;
     self.maximum_supply = maximum_supply;
 }
@@ -214,7 +224,7 @@ public fun destroy_burn_cap(self: &mut IPXTreasuryStandard, cap: BurnCap) {
     id.delete();
 }
 
-public fun destroy_metadata_cap(self: &mut IPXTreasuryStandard,cap: MetadataCap) {
+public fun destroy_metadata_cap(self: &mut IPXTreasuryStandard, cap: MetadataCap) {
     let MetadataCap { id, name, treasury } = cap;
 
     assert!(treasury == self.id.to_address(), EInvalidTreasury);
@@ -226,7 +236,7 @@ public fun destroy_metadata_cap(self: &mut IPXTreasuryStandard,cap: MetadataCap)
     id.delete();
 }
 
-// === Mint/Burn API === 
+// === Mint/Burn API ===
 
 public fun mint<T>(
     cap: &MintCap,
