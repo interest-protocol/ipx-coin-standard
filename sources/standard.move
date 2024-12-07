@@ -3,6 +3,10 @@ module ipx_coin_standard::ipx_coin_standard;
 use std::{ascii, string, type_name::{Self, TypeName}};
 use sui::{coin::{TreasuryCap, CoinMetadata, Coin}, dynamic_object_field as dof, event::emit};
 
+// === Constants ===
+
+const MAX_U64: u64 = 18446744073709551615;
+
 // === Errors ===
 
 const EInvalidCap: u64 = 0;
@@ -13,6 +17,8 @@ const ETreasuryCannotBurn: u64 = 2;
 
 const EInvalidTreasury: u64 = 3;
 
+const EMaximumSupplyExceeded: u64 = 4;
+
 // === Structs ===
 
 public struct Witness {
@@ -21,6 +27,7 @@ public struct Witness {
     mint_cap_address: Option<address>,
     burn_cap_address: Option<address>,
     metadata_cap_address: Option<address>,
+    maximum_supply: Option<u64>,
 }
 
 public struct MintCap has key, store {
@@ -48,6 +55,7 @@ public struct IPXTreasuryStandard has key, store {
     metadata_cap: Option<address>,
     mint_cap: Option<address>,
     burn_cap: Option<address>,
+    maximum_supply: Option<u64>,
 }
 
 // === Events ===
@@ -80,6 +88,7 @@ public fun new<T>(cap: TreasuryCap<T>, ctx: &mut TxContext): (IPXTreasuryStandar
         metadata_cap: option::none(),
         mint_cap: option::none(),
         burn_cap: option::none(),
+        maximum_supply: option::none(),
     };
 
     let ipx_treasury = ipx_treasury_standard.id.to_address();
@@ -101,8 +110,13 @@ public fun new<T>(cap: TreasuryCap<T>, ctx: &mut TxContext): (IPXTreasuryStandar
             mint_cap_address: option::none(),
             burn_cap_address: option::none(),
             metadata_cap_address: option::none(),
+            maximum_supply: option::none(),
         },
     )
+}
+
+public fun set_maximum_supply(witness: &mut Witness, maximum_supply: u64) {
+    witness.maximum_supply = option::some(maximum_supply);
 }
 
 // === Capabilities API ===
@@ -157,15 +171,23 @@ public fun allow_public_burn(witness: &mut Witness, self: &mut IPXTreasuryStanda
     self.can_burn = true;
 }
 
-public fun destroy_witness(self: &mut IPXTreasuryStandard, witness: Witness) {
-    let Witness { mint_cap_address, burn_cap_address, metadata_cap_address, treasury, .. } =
+#[allow(implicit_const_copy)]
+public fun destroy_witness<T>(self: &mut IPXTreasuryStandard, witness: Witness) {
+    let Witness { mint_cap_address, burn_cap_address, metadata_cap_address, treasury, maximum_supply,.. } =
         witness;
 
     assert!(treasury == self.id.to_address(), EInvalidTreasury);
 
+    let maximum_supply_value = *maximum_supply.borrow_with_default(&MAX_U64);
+
+    let cap = dof::borrow_mut<TypeName, TreasuryCap<T>>(&mut self.id, self.name);
+
+    assert!(maximum_supply_value >= cap.total_supply(), EMaximumSupplyExceeded);
+
     self.mint_cap = mint_cap_address;
     self.burn_cap = if (self.can_burn) { option::none() } else { burn_cap_address };
     self.metadata_cap = metadata_cap_address;
+    self.maximum_supply = maximum_supply;
 }
 
 public fun destroy_mint_cap(self: &mut IPXTreasuryStandard, cap: MintCap) {
@@ -216,7 +238,11 @@ public fun mint<T>(
 
     emit(Mint(self.name, amount));
 
+    let maximum_supply = self.maximum_supply.destroy_or!(MAX_U64);
+
     let cap = dof::borrow_mut<TypeName, TreasuryCap<T>>(&mut self.id, self.name);
+
+    assert!(maximum_supply >= cap.total_supply() + amount, EMaximumSupplyExceeded);
 
     cap.mint(amount, ctx)
 }
@@ -301,6 +327,10 @@ public fun total_supply<T>(self: &IPXTreasuryStandard): u64 {
     let cap = dof::borrow<TypeName, TreasuryCap<T>>(&self.id, self.name);
 
     cap.total_supply()
+}
+
+public fun maximum_supply(self: &IPXTreasuryStandard): Option<u64> {
+    self.maximum_supply
 }
 
 public fun can_burn(self: &IPXTreasuryStandard): bool {

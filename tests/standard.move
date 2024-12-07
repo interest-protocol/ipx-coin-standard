@@ -108,7 +108,7 @@ fun test_end_to_end() {
     assert_eq(burn_cap_address, object::id(&burn_cap).to_address());
     assert_eq(metadata_cap_address, object::id(&metadata_cap).to_address());
 
-    treasury_cap.destroy_witness(witness);
+    treasury_cap.destroy_witness<APTOS>(witness);
 
     let mint_cap_address = treasury_cap.treasury_mint_cap().destroy_some();
     let burn_cap_address = treasury_cap.treasury_burn_cap().destroy_some();
@@ -125,9 +125,50 @@ fun test_end_to_end() {
     assert_eq(treasury_cap.treasury_mint_cap().is_none(), true);
     assert_eq(treasury_cap.treasury_burn_cap().is_none(), true);
     assert_eq(treasury_cap.treasury_metadata_cap().is_none(), true);
+    
+    assert_eq(treasury_cap.maximum_supply().is_none(), true);
 
     destroy(treasury_cap);
     destroy(metadata);
+    destroy(scenario);
+}
+
+#[test]
+fun test_maximum_supply() {
+    let mut scenario = ts::begin(ADMIN);
+
+    aptos::init_for_testing(scenario.ctx());
+
+    scenario.next_tx(ADMIN);
+
+    let mut cap = scenario.take_from_sender<TreasuryCap<APTOS>>();
+    let aptos_coin = cap.mint<APTOS>(100, scenario.ctx());
+
+    let (mut treasury_cap, mut witness) = ipx_coin_standard::new(cap, scenario.ctx());
+
+    witness.allow_public_burn(&mut treasury_cap);
+
+    witness.set_maximum_supply( 100);
+
+    let mint_cap = witness.create_mint_cap(scenario.ctx());
+
+    treasury_cap.destroy_witness<APTOS>(witness);
+
+    treasury_cap.burn(aptos_coin);
+
+    let aptos_coin = mint_cap.mint<APTOS>(&mut treasury_cap, 100, scenario.ctx());
+
+    assert_eq(treasury_cap.maximum_supply().destroy_some(), 100);
+
+    treasury_cap.burn(aptos_coin);
+
+    mint_cap.mint<APTOS>(&mut treasury_cap, 50, scenario.ctx()).burn_for_testing();
+
+    assert_eq(treasury_cap.maximum_supply().destroy_some(), 100);
+    assert_eq(treasury_cap.total_supply<APTOS>(), 50);
+
+    destroy(mint_cap);
+    destroy(treasury_cap);
     destroy(scenario);
 }
 
@@ -148,7 +189,62 @@ fun test_treasury_burn() {
 
     treasury_cap.burn(aptos_coin);
 
-    treasury_cap.destroy_witness(witness);
+    treasury_cap.destroy_witness<APTOS>(witness);
+    destroy(treasury_cap);
+    destroy(scenario);
+}
+
+#[test]
+#[expected_failure(abort_code = ipx_coin_standard::EMaximumSupplyExceeded)]
+fun test_maximum_supply_exceeded() {
+    let mut scenario = ts::begin(ADMIN);
+
+    aptos::init_for_testing(scenario.ctx());
+
+    scenario.next_tx(ADMIN);
+
+    let mut cap = scenario.take_from_sender<TreasuryCap<APTOS>>();
+    let aptos_coin = cap.mint<APTOS>(100, scenario.ctx());
+
+    let (mut treasury_cap, mut witness) = ipx_coin_standard::new(cap, scenario.ctx());
+
+    witness.allow_public_burn(&mut treasury_cap);
+
+    witness.set_maximum_supply( 99);
+
+    treasury_cap.destroy_witness<APTOS>(witness);
+
+    treasury_cap.burn(aptos_coin);
+
+    destroy(treasury_cap);
+    destroy(scenario);
+}
+
+#[test]
+#[expected_failure(abort_code = ipx_coin_standard::EMaximumSupplyExceeded)]
+fun test_maximum_supply_exceeded_after_mint() {
+    let mut scenario = ts::begin(ADMIN);
+
+    aptos::init_for_testing(scenario.ctx());
+
+    scenario.next_tx(ADMIN);
+
+    let mut cap = scenario.take_from_sender<TreasuryCap<APTOS>>();
+    cap.mint<APTOS>(100, scenario.ctx()).burn_for_testing();
+
+    let (mut treasury_cap, mut witness) = ipx_coin_standard::new(cap, scenario.ctx());
+
+    witness.allow_public_burn(&mut treasury_cap);
+
+    witness.set_maximum_supply( 101);
+
+    let mint_cap = witness.create_mint_cap(scenario.ctx());
+
+    treasury_cap.destroy_witness<APTOS>(witness);
+
+    mint_cap.mint<APTOS>(&mut treasury_cap, 2, scenario.ctx()).burn_for_testing();
+
+    destroy(mint_cap);
     destroy(treasury_cap);
     destroy(scenario);
 }
@@ -411,7 +507,7 @@ fun test_destroy_cap_witness_invalid_treasury() {
 
     let (mut aptos_treasury_cap, _cap_witness) = ipx_coin_standard::new(aptos_treasury_cap, scenario.ctx());
 
-    aptos_treasury_cap.destroy_witness(witness);
+    aptos_treasury_cap.destroy_witness<APTOS>(witness);
 
     abort
 }
