@@ -378,13 +378,11 @@ public fun metadata_cap_name(cap: &MetadataCap): TypeName {
 public use fun cap_burn as BurnCap.burn;
 public use fun treasury_burn as IPXTreasuryStandard.burn;
 
-public use fun witness_ipx_treasury as Witness.ipx_treasury;
 public use fun mint_cap_ipx_treasury as MintCap.ipx_treasury;
 public use fun burn_cap_ipx_treasury as BurnCap.ipx_treasury;
 public use fun metadata_cap_ipx_treasury as MetadataCap.ipx_treasury;
 
 public use fun ipx_treasury_cap_name as IPXTreasuryStandard.name;
-public use fun witness_name as Witness.name;
 public use fun mint_cap_name as MintCap.name;
 public use fun burn_cap_name as BurnCap.name;
 public use fun metadata_cap_name as MetadataCap.name;
@@ -419,3 +417,11 @@ public fun witness_name(witness: &Witness): TypeName {
 public fun witness_ipx_treasury(witness: &Witness): address {
     witness.ipx_treasury
 }
+
+// === Test Aliases ===
+
+#[test_only]
+public use fun witness_ipx_treasury as Witness.ipx_treasury;
+
+#[test_only]
+public use fun witness_name as Witness.name;
