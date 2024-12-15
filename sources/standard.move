@@ -345,10 +345,6 @@ public fun can_burn(self: &IPXTreasuryStandard): bool {
     self.can_burn
 }
 
-public fun witness_ipx_treasury(witness: &Witness): address {
-    witness.ipx_treasury
-}
-
 public fun mint_cap_ipx_treasury(cap: &MintCap): address {
     cap.ipx_treasury
 }
@@ -361,12 +357,8 @@ public fun metadata_cap_ipx_treasury(cap: &MetadataCap): address {
     cap.ipx_treasury
 }
 
-public fun treasury_cap_name(cap: &IPXTreasuryStandard): TypeName {
+public fun ipx_treasury_cap_name(cap: &IPXTreasuryStandard): TypeName {
     cap.name
-}
-
-public fun witness_name(witness: &Witness): TypeName {
-    witness.name
 }
 
 public fun mint_cap_name(cap: &MintCap): TypeName {
@@ -381,18 +373,6 @@ public fun metadata_cap_name(cap: &MetadataCap): TypeName {
     cap.name
 }
 
-public fun mint_cap_address(witness: &Witness): Option<address> {
-    witness.mint_cap
-}
-
-public fun burn_cap_address(witness: &Witness): Option<address> {
-    witness.burn_cap
-}
-
-public fun metadata_cap_address(witness: &Witness): Option<address> {
-    witness.metadata_cap
-}
-
 // === Method Aliases ===
 
 public use fun cap_burn as BurnCap.burn;
@@ -403,7 +383,7 @@ public use fun mint_cap_ipx_treasury as MintCap.ipx_treasury;
 public use fun burn_cap_ipx_treasury as BurnCap.ipx_treasury;
 public use fun metadata_cap_ipx_treasury as MetadataCap.ipx_treasury;
 
-public use fun treasury_cap_name as IPXTreasuryStandard.name;
+public use fun ipx_treasury_cap_name as IPXTreasuryStandard.name;
 public use fun witness_name as Witness.name;
 public use fun mint_cap_name as MintCap.name;
 public use fun burn_cap_name as BurnCap.name;
@@ -412,3 +392,30 @@ public use fun metadata_cap_name as MetadataCap.name;
 public use fun destroy_mint_cap as MintCap.destroy;
 public use fun destroy_burn_cap as BurnCap.destroy;
 public use fun destroy_metadata_cap as MetadataCap.destroy;
+
+// === Test Functions ===
+
+#[test_only]
+public fun mint_cap_address(witness: &Witness): Option<address> {
+    witness.mint_cap
+}
+
+#[test_only]
+public fun burn_cap_address(witness: &Witness): Option<address> {
+    witness.burn_cap
+}
+
+#[test_only]
+public fun metadata_cap_address(witness: &Witness): Option<address> {
+    witness.metadata_cap
+}
+
+#[test_only]
+public fun witness_name(witness: &Witness): TypeName {
+    witness.name
+}
+
+#[test_only]
+public fun witness_ipx_treasury(witness: &Witness): address {
+    witness.ipx_treasury
+}
