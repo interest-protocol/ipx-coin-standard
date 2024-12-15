@@ -53,13 +53,13 @@ fun test_end_to_end() {
     assert_eq(burn_cap.name(), name);
     assert_eq(metadata_cap.name(), name);
     assert_eq(witness.name(), name);
-    assert_eq(witness.treasury(), object::id(&treasury_cap).to_address());
+    assert_eq(witness.ipx_treasury(), object::id(&treasury_cap).to_address());
 
     let aptos_coin = mint_cap.mint<APTOS>(&mut treasury_cap, 100, scenario.ctx());
 
     let effects = scenario.next_tx(ADMIN);
 
-    assert_eq(effects.num_user_events(), 2);
+    assert_eq(effects.num_user_events(), 1);
 
     assert_eq(treasury_cap.total_supply<APTOS>(), 100);
     assert_eq(aptos_coin.value(), 100);
@@ -75,9 +75,9 @@ fun test_end_to_end() {
     let treasury_address = object::id(&treasury_cap).to_address();
 
     assert_eq(treasury_cap.can_burn(), false);
-    assert_eq(treasury_address, mint_cap.treasury());
-    assert_eq(treasury_address, burn_cap.treasury());
-    assert_eq(treasury_address, metadata_cap.treasury());
+    assert_eq(treasury_address, mint_cap.ipx_treasury());
+    assert_eq(treasury_address, burn_cap.ipx_treasury());
+    assert_eq(treasury_address, metadata_cap.ipx_treasury());
 
     treasury_cap.update_name<APTOS>(&mut metadata, &metadata_cap, b"Aptos V2".to_string());
     treasury_cap.update_symbol<APTOS>(&mut metadata, &metadata_cap, b"APT2".to_ascii_string());
@@ -110,23 +110,15 @@ fun test_end_to_end() {
 
     treasury_cap.destroy_witness<APTOS>(witness);
 
-    let mint_cap_address = treasury_cap.treasury_mint_cap().destroy_some();
-    let burn_cap_address = treasury_cap.treasury_burn_cap().destroy_some();
-    let metadata_cap_address = treasury_cap.treasury_metadata_cap().destroy_some();
+    let effects = scenario.next_tx(ADMIN);
 
-    assert_eq(mint_cap_address, object::id(&mint_cap).to_address());
-    assert_eq(burn_cap_address, object::id(&burn_cap).to_address());
-    assert_eq(metadata_cap_address, object::id(&metadata_cap).to_address());
-
-    treasury_cap.destroy_mint_cap(mint_cap);
-    treasury_cap.destroy_burn_cap(burn_cap);
-    treasury_cap.destroy_metadata_cap(metadata_cap);
-
-    assert_eq(treasury_cap.treasury_mint_cap().is_none(), true);
-    assert_eq(treasury_cap.treasury_burn_cap().is_none(), true);
-    assert_eq(treasury_cap.treasury_metadata_cap().is_none(), true);
+    assert_eq(effects.num_user_events(), 1);
     
     assert_eq(treasury_cap.maximum_supply().is_none(), true);
+
+    mint_cap.destroy();
+    burn_cap.destroy();
+    metadata_cap.destroy();
 
     destroy(treasury_cap);
     destroy(metadata);
@@ -287,7 +279,7 @@ fun test_burn_cap_already_created_for_treasury() {
     witness.allow_public_burn(&mut treasury_cap_v2);
 
     destroy(witness);
-    treasury_cap_v2.destroy_burn_cap(burn_cap);
+    burn_cap.destroy();
     destroy(scenario);
     destroy(treasury_cap_v2);
 }
@@ -434,63 +426,6 @@ fun test_metadata_cap_already_created() {
 
     let _metadata_cap = witness.create_metadata_cap(scenario.ctx());
     let _metadata_cap_2 = witness.create_metadata_cap(scenario.ctx());
-
-    abort
-}
-
-#[test]
-#[expected_failure(abort_code = ipx_coin_standard::EInvalidTreasury)]
-fun test_destroy_mint_cap_invalid_treasury() {
-    let mut scenario = ts::begin(ADMIN);
-
-    let eth_treasury_cap = coin::create_treasury_cap_for_testing<ETH>(scenario.ctx());
-    let aptos_treasury_cap = coin::create_treasury_cap_for_testing<APTOS>(scenario.ctx());
-
-    let (_treasury_cap_v2, mut witness) = ipx_coin_standard::new(eth_treasury_cap, scenario.ctx());
-
-    let (mut aptos_treasury_cap_v2, _cap_witness) = ipx_coin_standard::new(aptos_treasury_cap, scenario.ctx());
-
-    let metadata_cap = witness.create_metadata_cap(scenario.ctx());
-    
-    aptos_treasury_cap_v2.destroy_metadata_cap(metadata_cap);
-
-    abort
-}
-
-#[test]
-#[expected_failure(abort_code = ipx_coin_standard::EInvalidTreasury)]
-fun test_destroy_burn_cap_invalid_treasury() {
-    let mut scenario = ts::begin(ADMIN);
-
-    let eth_treasury_cap = coin::create_treasury_cap_for_testing<ETH>(scenario.ctx());
-    let aptos_treasury_cap = coin::create_treasury_cap_for_testing<APTOS>(scenario.ctx());
-
-    let (_treasury_cap_v2, mut witness) = ipx_coin_standard::new(eth_treasury_cap, scenario.ctx());
-
-    let (mut aptos_treasury_cap_v2, _cap_witness) = ipx_coin_standard::new(aptos_treasury_cap, scenario.ctx());
-
-    let burn_cap = witness.create_burn_cap(scenario.ctx());
-    
-    aptos_treasury_cap_v2.destroy_burn_cap(burn_cap);
-
-    abort
-}
-
-#[test]
-#[expected_failure(abort_code = ipx_coin_standard::EInvalidTreasury)]
-fun test_destroy_metadata_cap_invalid_treasury() {
-    let mut scenario = ts::begin(ADMIN);
-
-    let eth_treasury_cap = coin::create_treasury_cap_for_testing<ETH>(scenario.ctx());
-    let aptos_treasury_cap = coin::create_treasury_cap_for_testing<APTOS>(scenario.ctx());
-
-    let (_treasury_cap_v2, mut witness) = ipx_coin_standard::new(eth_treasury_cap, scenario.ctx());
-
-    let (mut aptos_treasury_cap_v2, _cap_witness) = ipx_coin_standard::new(aptos_treasury_cap, scenario.ctx());
-
-    let metadata_cap = witness.create_metadata_cap(scenario.ctx());
-    
-    aptos_treasury_cap_v2.destroy_metadata_cap(metadata_cap);
 
     abort
 }
