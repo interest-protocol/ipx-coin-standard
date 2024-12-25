@@ -66,9 +66,9 @@ public struct New has copy, drop {
     metadata_cap: Option<address>,
 }
 
-public struct Mint has drop, copy (TypeName, u64)
+public struct Mint(TypeName, u64) has copy, drop;
 
-public struct Burn has drop, copy (TypeName, u64)
+public struct Burn(TypeName, u64) has drop, copy;
 
 public struct DestroyMintCap has drop, copy {
     ipx_treasury: address,
@@ -84,6 +84,14 @@ public struct DestroyMetadataCap has drop, copy {
     ipx_treasury: address,
     name: TypeName,
 }
+
+public struct UpdateName(TypeName, string::String) has drop, copy;
+
+public struct UpdateSymbol(TypeName, ascii::String) has drop, copy;
+
+public struct UpdateDescription(TypeName, string::String) has drop, copy;
+
+public struct UpdateIconUrl(TypeName, ascii::String) has drop, copy;
 
 // === Public Mutative ===
 
@@ -285,6 +293,8 @@ public fun update_name<T>(
 ) {
     assert!(cap.ipx_treasury == self.id.to_address(), EInvalidCap);
 
+    emit(UpdateName(self.name, name));
+
     let cap = dof::borrow<TypeName, TreasuryCap<T>>(&self.id, self.name);
 
     cap.update_name(metadata, name);
@@ -297,6 +307,8 @@ public fun update_symbol<T>(
     symbol: ascii::String,
 ) {
     assert!(cap.ipx_treasury == self.id.to_address(), EInvalidCap);
+
+    emit(UpdateSymbol(self.name, symbol));
 
     let cap = dof::borrow<TypeName, TreasuryCap<T>>(&self.id, self.name);
 
@@ -311,6 +323,8 @@ public fun update_description<T>(
 ) {
     assert!(cap.ipx_treasury == self.id.to_address(), EInvalidCap);
 
+    emit(UpdateDescription(self.name, description));
+
     let cap = dof::borrow<TypeName, TreasuryCap<T>>(&self.id, self.name);
 
     cap.update_description(metadata, description);
@@ -323,6 +337,8 @@ public fun update_icon_url<T>(
     url: ascii::String,
 ) {
     assert!(cap.ipx_treasury == self.id.to_address(), EInvalidCap);
+
+    emit(UpdateIconUrl(self.name, url));
 
     let cap = dof::borrow<TypeName, TreasuryCap<T>>(&self.id, self.name);
 

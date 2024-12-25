@@ -112,7 +112,7 @@ fun test_end_to_end() {
 
     let effects = scenario.next_tx(ADMIN);
 
-    assert_eq(effects.num_user_events(), 1);
+    assert_eq(effects.num_user_events(), 5);
     
     assert_eq(treasury_cap.maximum_supply().is_none(), true);
 
