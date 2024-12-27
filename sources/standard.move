@@ -68,30 +68,30 @@ public struct New has copy, drop {
 
 public struct Mint(TypeName, u64) has copy, drop;
 
-public struct Burn(TypeName, u64) has drop, copy;
+public struct Burn(TypeName, u64) has copy, drop;
 
-public struct DestroyMintCap has drop, copy {
+public struct DestroyMintCap has copy, drop {
     ipx_treasury: address,
     name: TypeName,
 }
 
-public struct DestroyBurnCap has drop, copy {
+public struct DestroyBurnCap has copy, drop {
     ipx_treasury: address,
     name: TypeName,
 }
 
-public struct DestroyMetadataCap has drop, copy {
+public struct DestroyMetadataCap has copy, drop {
     ipx_treasury: address,
     name: TypeName,
 }
 
-public struct UpdateName(TypeName, string::String) has drop, copy;
+public struct UpdateName(TypeName, string::String) has copy, drop;
 
-public struct UpdateSymbol(TypeName, ascii::String) has drop, copy;
+public struct UpdateSymbol(TypeName, ascii::String) has copy, drop;
 
-public struct UpdateDescription(TypeName, string::String) has drop, copy;
+public struct UpdateDescription(TypeName, string::String) has copy, drop;
 
-public struct UpdateIconUrl(TypeName, ascii::String) has drop, copy;
+public struct UpdateIconUrl(TypeName, ascii::String) has copy, drop;
 
 // === Public Mutative ===
 

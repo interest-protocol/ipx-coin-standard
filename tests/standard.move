@@ -1,12 +1,13 @@
 #[test_only]
 module ipx_coin_standard::ipx_coin_standard_tests;
 
-use ipx_coin_standard::aptos::{Self, APTOS};
-use ipx_coin_standard::ipx_coin_standard;
+use ipx_coin_standard::{aptos::{Self, APTOS}, ipx_coin_standard};
 use std::type_name;
-use sui::coin::{Self, TreasuryCap, CoinMetadata};
-use sui::test_scenario as ts;
-use sui::test_utils::{assert_eq, destroy};
+use sui::{
+    coin::{Self, TreasuryCap, CoinMetadata},
+    test_scenario as ts,
+    test_utils::{assert_eq, destroy}
+};
 
 const ADMIN: address = @0xdead;
 
@@ -113,7 +114,7 @@ fun test_end_to_end() {
     let effects = scenario.next_tx(ADMIN);
 
     assert_eq(effects.num_user_events(), 5);
-    
+
     assert_eq(treasury_cap.maximum_supply().is_none(), true);
 
     mint_cap.destroy();
@@ -138,9 +139,9 @@ fun test_maximum_supply() {
 
     let (mut treasury_cap, mut witness) = ipx_coin_standard::new(cap, scenario.ctx());
 
-        witness.allow_public_burn(&mut treasury_cap);
+    witness.allow_public_burn(&mut treasury_cap);
 
-    witness.set_maximum_supply( 100);
+    witness.set_maximum_supply(100);
 
     let mint_cap = witness.create_mint_cap(scenario.ctx());
 
@@ -202,7 +203,7 @@ fun test_maximum_supply_exceeded() {
 
     witness.allow_public_burn(&mut treasury_cap);
 
-    witness.set_maximum_supply( 99);
+    witness.set_maximum_supply(99);
 
     treasury_cap.destroy_witness<APTOS>(witness);
 
@@ -228,7 +229,7 @@ fun test_maximum_supply_exceeded_after_mint() {
 
     witness.allow_public_burn(&mut treasury_cap);
 
-    witness.set_maximum_supply( 101);
+    witness.set_maximum_supply(101);
 
     let mint_cap = witness.create_mint_cap(scenario.ctx());
 
@@ -440,7 +441,10 @@ fun test_destroy_cap_witness_invalid_treasury() {
 
     let (_treasury_cap_v2, witness) = ipx_coin_standard::new(eth_treasury_cap, scenario.ctx());
 
-    let (mut aptos_treasury_cap, _cap_witness) = ipx_coin_standard::new(aptos_treasury_cap, scenario.ctx());
+    let (mut aptos_treasury_cap, _cap_witness) = ipx_coin_standard::new(
+        aptos_treasury_cap,
+        scenario.ctx(),
+    );
 
     aptos_treasury_cap.destroy_witness<APTOS>(witness);
 
