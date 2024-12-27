@@ -66,15 +66,15 @@ public struct New has copy, drop {
     ipx_treasury: address,
 }
 
-public struct Mint has drop, copy (TypeName, u64)
+public struct Mint has copy, drop (TypeName, u64)
 
-public struct Burn has drop, copy (TypeName, u64)
+public struct Burn has copy, drop (TypeName, u64)
 
-public struct DestroyMintCap has drop, copy (TypeName)
+public struct DestroyMintCap has copy, drop (TypeName)
 
-public struct DestroyBurnCap has drop, copy (TypeName)
+public struct DestroyBurnCap has copy, drop (TypeName)
 
-public struct DestroyMetadataCap has drop, copy (TypeName)
+public struct DestroyMetadataCap has copy, drop (TypeName)
 
 // === Public Mutative ===
 
