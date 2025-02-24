@@ -172,6 +172,7 @@ public fun create_metadata_cap(witness: &mut Witness, ctx: &mut TxContext): Meta
 
 public fun allow_public_burn(witness: &mut Witness, self: &mut IPXTreasuryStandard) {
     assert!(witness.burn_cap.is_none(), ECapAlreadyCreated);
+    assert!(self.id.to_address() == witness.ipx_treasury, EInvalidTreasury);
 
     witness.burn_cap = option::some(self.id.to_address());
 

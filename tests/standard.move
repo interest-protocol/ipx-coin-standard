@@ -450,3 +450,35 @@ fun test_destroy_cap_witness_invalid_treasury() {
 
     abort
 }
+
+#[test]
+#[expected_failure(abort_code = ipx_coin_standard::EInvalidTreasury)]
+fun test_invalid_public_burn_witness() {
+    let mut scenario = ts::begin(ADMIN);
+
+    aptos::init_for_testing(scenario.ctx());
+
+    scenario.next_tx(ADMIN);
+
+    let aptos_treasury_cap = scenario.take_from_sender<TreasuryCap<APTOS>>();
+
+    let eth_treasury_cap = coin::create_treasury_cap_for_testing<ETH>(scenario.ctx());
+
+    let (mut aptos_treasury_cap_v2, cap_witness) = ipx_coin_standard::new(
+        aptos_treasury_cap,
+        scenario.ctx(),
+    );
+
+    let (eth_treasury_cap_v2, mut eth_cap_witness) = ipx_coin_standard::new(
+        eth_treasury_cap,
+        scenario.ctx(),
+    );
+
+    eth_cap_witness.allow_public_burn(&mut aptos_treasury_cap_v2);
+
+    destroy(scenario);
+    destroy(cap_witness);
+    destroy(eth_cap_witness);
+    destroy(aptos_treasury_cap_v2);
+    destroy(eth_treasury_cap_v2);
+}
